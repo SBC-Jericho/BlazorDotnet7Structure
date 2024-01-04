@@ -1,0 +1,6 @@
+@BlazorSignalR.Server_HostAddress = http://localhost:5027
+
+GET {{BlazorSignalR.Server_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
