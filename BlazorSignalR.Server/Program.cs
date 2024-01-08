@@ -1,3 +1,6 @@
+using BlazorSignalR.Server.Hubs;
+
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -8,7 +11,11 @@ builder.Services.AddRazorPages();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddSignalR();
 var app = builder.Build();
+
+//builder.Services.AddRazorComponents()
+//    .AddInteractiveWebAssemblyComponents();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -21,7 +28,9 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseBlazorFrameworkFiles();
-app.UseStaticFiles();   
+app.UseStaticFiles();
+
+app.MapHub<ChatHub>("/chathub");
 
 app.UseAuthorization();
 app.MapControllers();
