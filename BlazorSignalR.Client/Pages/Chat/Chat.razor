@@ -8,13 +8,23 @@
     <MudCardContent>
 @if (isConnected)
 {
+    
+    <MudButton 
+        OnClick="JoinGroup"
+        Color="Color.Primary"
+        Variant="Variant.Filled"
+        ButtonType="ButtonType.Button">
+        Join
+    </MudButton>
 
-    <MudTextField 
-        Variant="Variant.Outlined"
-        @bind-Value="userInput" 
-        Label="User Input" 
-    />
+            <select id="group" @bind="selectedOption">
+                <option value="All">Everyone</option>
+                <option value="MySelf">Myself</option>
+                <option value="PrivateGroup">Private Group</option>
 
+            </select>
+
+            <p>You selected: @selectedOption</p>
     <MudTextField 
         Variant="Variant.Outlined"
         @bind-Value="messageInput" 
@@ -36,23 +46,23 @@ else
     <span>Connecting....</span>
 
 }
-    </MudCardContent>
+</MudCardContent>
 </MudCard>
 @code {
     private HubConnection hubConnection;
     private List<string> messages = new List<string>();
     private string userInput;
     private string messageInput;
-
+    private string selectedOption = "PrivateGroup";
     protected override async Task OnInitializedAsync() 
     {
-        hubConnection = new HubConnectionBuilder()
+        hubConnection = new HubConnectionBuilder()  
         .WithUrl(NavigationManager.ToAbsoluteUri("/chathub"))
         .Build();
 
-        hubConnection.On<string, string>("ReceivedMessage", (user, message) =>
+        hubConnection.On<string>("ReceivedMessage", (message) =>
         {
-            var encodeMessage = $"{user}: {message}";
+            var encodeMessage = $"{message}";
             messages.Add(encodeMessage);
             StateHasChanged();
 
@@ -61,8 +71,26 @@ else
         await hubConnection.StartAsync();
     }
 
-    Task Send() => hubConnection.SendAsync("SendMessage", userInput, messageInput);
+    async Task Send()
+    {
+        if (selectedOption == "PrivateGroup")
+        {
+            await hubConnection.SendAsync("SendMessageToGroup", "PrivateGroup", messageInput);
+
+        }
+        else 
+        {
+            await hubConnection.SendAsync("SendMessage", messageInput);
+
+        } 
+    } 
+
 
     public bool isConnected => hubConnection.State == HubConnectionState.Connected;
+
+    async Task JoinGroup()
+    {
+         await hubConnection.SendAsync("AddGroup", "PrivateGroup");
+    }
 }
     
